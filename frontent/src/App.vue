@@ -1,6 +1,6 @@
 <template>
     <b-container class="application">
-        <WelcomePage msg="Passport Code Challenge App: Vue.js and Lumen"/>
+        <WelcomePage title="Passport Code Challenge App: Vue.js and Lumen"/>
         <b-row v-bind:key="index" v-for="(error, index) in errors" class="errors">
             <b-alert show variant="danger">
                 <span>{{error.message}} ({{error.status}})</span>

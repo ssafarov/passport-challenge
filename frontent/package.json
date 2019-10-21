@@ -1,5 +1,7 @@
 {
-  "name": "frontent",
+  "name": "live_tree_view",
+  "author": "Sergei Safarov",
+  "description": "Live Tree view. Frontend part. For passport inc.",
   "version": "0.1.0",
   "private": true,
   "scripts": {
