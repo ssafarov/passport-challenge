@@ -1,29 +1,33 @@
-# frontent
+# Live Tree view application 
+
+This is the frontent part of live tree view application.
 
 ## Project setup
+Open console and run the followings commands: 
 ```
-npm install
+cd frontend
+npm install 
 ```
 
-### Compiles and hot-reloads for development
+Compiles and hot-reloads for development
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+Compiles and minifies for production
 ```
 npm run build
 ```
 
-### Run your unit tests
+Run unit tests
 ```
 npm run test:unit
 ```
 
-### Lints and fixes files
+Lints and fixes files
 ```
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### License
+MIT: [http://mit-license.org](http://mit-license.org)
