@@ -1,28 +1,81 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+    <b-container class="application">
+        <WelcomePage msg="Passport Code Challenge App: Vue.js and Lumen"/>
+        <b-row v-bind:key="index" v-for="(error, index) in errors" class="errors">
+            <b-alert show variant="danger">
+                <span>{{error.message}} ({{error.status}})</span>
+            </b-alert>
+        </b-row>
+        <br/>
+
+        <b-row class="footer">
+            <b-col>
+                <ul class="footer-list">
+                    <li><a href="http://sergeysafarov.info">Sergei Safarov</a></li>
+                    <li><a href="mailto:inbox@sergeysafarov.com">inbox@sergeysafarov.com</a></li>
+                    <li><a href="https://github.com/ssafarov/passport-challenge">Github repo</a></li>
+                </ul>
+            </b-col>
+        </b-row>
+    </b-container>
+
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+    import {BAlert, BCol, BContainer, BRow} from 'bootstrap-vue';
 
-export default {
-  name: 'app',
-  components: {
-    HelloWorld
-  }
-}
+    import Welcome from './components/Welcome.vue'
+
+    export default {
+        name: 'app',
+        components: {
+            'b-container': BContainer,
+            'b-row': BRow,
+            'b-col': BCol,
+            'b-alert': BAlert,
+
+            WelcomePage: Welcome,
+        },
+        data: function () {
+            return {
+                data: {children: []},
+                errors: []
+            };
+        },
+        mounted: function () {
+            console.log('App mounted');
+        },
+        methods: {
+            bus: function (data) {
+                console.log(data);
+            },
+        }
+    }
 </script>
 
 <style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+    .application {
+        font-family: 'Avenir', Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: left;
+        color: #2c3e50;
+        margin-top: 40px;
+    }
+
+    .container {
+        max-width: 1500px;
+    }
+
+    .footer {
+        text-align: center;
+        font-size: 0.8rem;
+    }
+
+    .footer li {
+        display: inline-block;
+        list-style: none;
+        margin: 0 10px;
+    }
+
 </style>
