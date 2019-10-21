@@ -2,7 +2,7 @@
     <b-container class="application">
         <WelcomePage title="Passport Code Challenge App: Vue.js and Lumen"/>
         <b-row v-bind:key="index" v-for="(error, index) in errors" class="errors">
-            <b-alert show variant="danger">
+            <b-alert show variant="danger" class="full-width">
                 <span>{{error.message}} ({{error.status}})</span>
             </b-alert>
         </b-row>
@@ -24,6 +24,7 @@
 
 <script>
     import {BAlert, BCol, BContainer, BRow} from 'bootstrap-vue';
+    import axios from 'axios';
 
     import Welcome from './components/Welcome.vue'
     import TreeView from './components/TreeView/TreeView';
@@ -41,12 +42,13 @@
         },
         data: function () {
             return {
+                api_url: 'http://localhost:8080',
                 factories: {children: []},
                 errors: []
             };
         },
         mounted: function () {
-            console.log('App mounted');
+            this.requestServer('factories');
         },
         filters: {
             formatter: function (item) {
@@ -61,6 +63,22 @@
             bus: function (data) {
                 console.log(data);
             },
+            requestServer: function (endpoint, method='get') {
+                let payload = {};
+
+                axios({
+                    method: method,
+                    accept: 'application/json',
+                    url: this.api_url + '/api/' + endpoint,
+                    data: payload
+                })
+                .then(response => {
+                    this.factories = JSON.parse(response.data.payload);
+                })
+                .catch(error => {
+                    this.errors.push({status: 'error', message: 'Api call was not successfull. Please try again later. Possible reason: '+error});
+                });
+            }
         }
     }
 </script>
@@ -88,6 +106,10 @@
         display: inline-block;
         list-style: none;
         margin: 0 10px;
+    }
+
+    .full-width{
+        width: 100%;
     }
 
 </style>
