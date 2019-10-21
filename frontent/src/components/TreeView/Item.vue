@@ -1,0 +1,289 @@
+<template>
+    <div>
+        <li class="item">
+            <div v-if="!isEditing"
+                 :class="{bold: isNode}"
+                 @bus="bus"
+                 @editing="editing"
+                 @deleting="deleting"
+                 @click="toggleOpen"
+                 @dblclick="startEdit"
+                 @contextmenu.prevent="startEdit">
+                <span class="chevron " :class="{opened: isOpened}" v-if="isNode"></span>
+                {{ model.title }}
+                <span v-if="isNode" class="hint">{{currentAmount}} {{ currentAmount | pluralize }}</span>&nbsp;<span v-if="model.low && model.high" class="hint">with range from {{model.low}} to {{model.high}}</span>
+            </div>
+            <div v-if="isEditing">
+                <input type="text" class="edit title" placeholder="Factory title"
+                       :class="{error: !isTitleOk}"
+                       v-model="model.title"/>&nbsp;@&nbsp;
+                <input type="text" class="edit number" placeholder="Amount"
+                       :class="{error: !isAmountOk}"
+                       v-model="amount"/>&nbsp;with&nbsp;
+                <input type="text" class="edit number" placeholder="Min"
+                       :class="{error: !isLowOk}"
+                       v-model="model.low"/>&nbsp;-&nbsp;
+                <input type="text" class="edit number" placeholder="Max"
+                       :class="{error: !isHighOk}"
+                       v-model="model.high"/>&nbsp;bounds
+                <div v-if="showAlert" class="hint error">There are some errors in input. Please fix all red fields
+                    before proceed.
+                </div>
+                <b-button size="sm" variant="success"
+                          :class="{disabled: !isInputOk}"
+                          @click="submitEdit">Save
+                </b-button>&nbsp;
+                <b-button size="sm" variant="secondary"
+                          @click="cancelEdit">Cancel
+                </b-button>&nbsp;
+                <b-button size="sm" variant="tertiary"
+                          @click="deleteNode">Delete
+                </b-button>
+            </div>
+            <ul v-show="open" v-if="isNode">
+                <tree-item
+                        @bus="bus"
+                        @editing="editing"
+                        @deleting="deleting"
+                        class="item"
+                        v-for="(item, index) in model.children"
+                        :key="index"
+                        :model="item"
+                        :state="state">
+                </tree-item>
+            </ul>
+        </li>
+    </div>
+</template>
+
+<script>
+    import {BButton} from 'bootstrap-vue';
+
+    export default {
+        name: 'tree-item',
+        props: {
+            model: {},
+            state: null
+        },
+        components: {
+            'b-button': BButton
+        },
+        data: function () {
+            return {
+                showAlert: false,
+                open: false,
+                edit: false,
+                amount: 0
+            }
+        },
+        beforeEditingCache: function () {
+            return {}
+        },
+        mounted() {
+            this.amount = this.currentAmount;
+        },
+        computed: {
+            currentAmount: function () {
+                return this.model.children && this.model.children.length ? this.model.children.length : 0;
+            },
+            isNode: function () {
+                return this.model.children;
+            },
+            isOpened: function () {
+                return this.open
+            },
+            isEditing: function () {
+                return this.edit
+            },
+            isTitleOk: function () {
+                let regex = new RegExp(/(<([^>]+)>)/ig);
+                let sTest = String(this.model.title);
+                return sTest !== '' && sTest !== null && !regex.test(sTest);
+            },
+            isAmountOk: function () {
+                let iTest = Number(this.amount);
+                return Number.isInteger(iTest) && iTest < 16 && iTest > 0;
+            },
+            isLowOk: function () {
+                let iTest = Number(this.model.lower);
+                return Number.isInteger(iTest) && iTest >= 0;
+            },
+            isHighOk: function () {
+                let iTest = Number(this.model.higher);
+                return Number.isInteger(iTest) && iTest >= 0 && iTest > this.model.lower;
+            },
+            isInputOk: function () {
+                return this.isAmountOk && this.isLowOk && this.isHighOk && this.isTitleOk;
+            }
+        },
+        filters: {
+            pluralize: function (num) {
+                return num === 1 ? 'item' : 'items'
+            }
+        },
+        methods: {
+            // events
+            bus: function (model) {
+                this.$emit('bus', model)
+            },
+            editing: function (model) {
+                this.$emit('editing', model)
+            },
+            deleting: function (model) {
+                this.$emit('deleting', model.hash);
+            },
+            // methods
+            toggleOpen: function () {
+                if (this.isNode) {
+                    this.open = !this.open;
+                }
+            },
+            submitEdit: function () {
+                // Input checks
+                this.showAlert = !this.isInputOk;
+                if (!this.isInputOk) {
+                    return false;
+                }
+                // Rebuild Childs
+                this.rebuildChilds();
+
+                this.beforeEditCache = null;
+                this.edit = false;
+
+                this.$emit('bus', this.model);
+                this.$emit('editing', this.edit);
+            },
+            cancelEdit: function () {
+                this.model = Object.assign(this.model, this.beforeEditCache);
+                this.edit = false;
+                this.showAlert = false;
+
+                this.$emit('bus', this.model);
+                this.$emit('editing', this.edit);
+            },
+            deleteNode: function () {
+                this.$emit('deleting', this.model);
+                this.edit = false;
+                this.$emit('editing', this.edit);
+            },
+            startEdit: function () {
+                if (this.state || this.model.isRoot) {
+                    return;
+                }
+
+                this.edit = true;
+                this.beforeEditCache = Object.assign({}, this.model);
+                this.$emit('editing', this.edit);
+            },
+            rebuildChilds: function () {
+                this.model.children = [];
+                for (let i = 0; i < this.amount; i++) {
+                    this.model.children.push({
+                        'title': Math.floor(this.model.low + (Math.random() * (this.model.high - this.model.low + 1)))
+                    });
+                }
+            }
+        }
+    }
+</script>
+
+<style scoped lang="scss">
+    ul {
+        padding-left: 1em;
+        line-height: 1.5em;
+        list-style-type: none;
+        text-align: left;
+    }
+
+    .item {
+        cursor: pointer;
+        max-width: 650px;
+    }
+
+    .chevron {
+        display: inline-flex;
+    }
+
+    .chevron::before {
+        color: #444;
+        content: "\25b6";
+        font-size: 10px;
+        left: 1px;
+        top: 5px;
+        transition: -webkit-transform 0.1s ease;
+        transition: transform 0.1s ease;
+        transition: transform 0.1s ease, -webkit-transform 0.1s ease;
+        -webkit-transition: -webkit-transform 0.1s ease;
+    }
+
+    .chevron.opened::before {
+        transform: rotate(90deg);
+        -webkit-transform: rotate(90deg);
+    }
+
+    .bold {
+        font-weight: bold;
+    }
+
+    input.error {
+        color: #f24;
+        background-color: #ffc7c8 !important;
+    }
+
+    .hint {
+        color: #eee;
+        background-color: #999;
+        padding: 3px 5px;
+        border: #999 1px solid;
+        border-radius: 9px;
+        font-size: 70%;
+    }
+
+    .hint.error {
+        background-color: #ff647d;
+        border: #ff647d 1px solid;
+        color: #eee;
+        max-width: 630px;
+        text-align: center;
+    }
+
+    input {
+        margin: 2px;
+    }
+
+    .btn-tertiary {
+        background-color: #f24;
+        color: #eee
+    }
+
+    .btn-tertiary:hover {
+        background-color: #f68
+    }
+
+    input.edit {
+        border: #aaa solid 1px;
+        background-color: #fff;
+        padding: 4px;
+        border-radius: 4px;
+    }
+
+    input.title {
+        max-width: 200px;
+    }
+
+    input.number {
+        max-width: 60px;
+    }
+
+    input::-webkit-input-placeholder {
+        font-style: italic;
+        font-weight: 300;
+        color: #666;
+    }
+
+    input::-moz-placeholder {
+        font-style: italic;
+        font-weight: 300;
+        color: #666;
+    }
+</style>

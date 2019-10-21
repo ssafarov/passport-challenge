@@ -7,7 +7,8 @@
             </b-alert>
         </b-row>
         <br/>
-
+        <tree-view :tree-data="factories" @bus="bus"></tree-view>
+        <br/>
         <b-row class="footer">
             <b-col>
                 <ul class="footer-list">
@@ -25,6 +26,7 @@
     import {BAlert, BCol, BContainer, BRow} from 'bootstrap-vue';
 
     import Welcome from './components/Welcome.vue'
+    import TreeView from './components/TreeView/TreeView';
 
     export default {
         name: 'app',
@@ -35,15 +37,25 @@
             'b-alert': BAlert,
 
             WelcomePage: Welcome,
+            TreeView: TreeView
         },
         data: function () {
             return {
-                data: {children: []},
+                factories: {children: []},
                 errors: []
             };
         },
         mounted: function () {
             console.log('App mounted');
+        },
+        filters: {
+            formatter: function (item) {
+                let output = '';
+                for (let i = 0; 1 < item.length; i++) {
+                    output = output.concat(item[i] + '\n');
+                }
+                return output;
+            }
         },
         methods: {
             bus: function (data) {
