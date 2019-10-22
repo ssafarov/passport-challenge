@@ -55,7 +55,7 @@
             };
         },
         mounted: function () {
-            this.requestServer('factories');
+            this.makeRequest('factories');
         },
         filters: {
             formatter: function (item) {
@@ -69,26 +69,38 @@
         methods: {
             bus: function (data) {
                 console.log(data);
+                this.factories = data;
+                this.makeRequest('factories/update', 'post');
             },
-            requestServer: function (endpoint) {
+            makeRequest: function (endpoint, method = 'get') {
                 const sender = axios.create({
                     baseURL: this.api_url,
                     timeout: 5000,
                     dataType: 'json',
-                    accept: 'application/json',
+                    accept: 'application/json, text/plain, */*',
                 });
 
-                sender.get(endpoint, {params:{tree_key:this.tree_key}})
+                let config = {
+                    method: method,
+                    url: endpoint,
+                    headers: {
+                        Authorization: this.tree_key
+                    },
+                    data: {
+                        tree_key: this.tree_key,
+                        payload: this.factories
+                    },
+                };
+                this.errors = [];
+
+                sender.request(config)
                 .then(response => {
-                    console.log(response);
                     this.errors.push({status: 'success', message: response.data.message});
                     this.factories = JSON.parse(response.data.payload.data);
                 })
                 .catch(error => {
-                    console.log(error.response);
-
                     this.errors.push({status: 'error', message: 'Api call was not successfull. Please try again later. Response: '+error});
-                });
+                })
             }
         }
     }

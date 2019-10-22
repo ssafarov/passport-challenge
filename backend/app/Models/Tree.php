@@ -22,15 +22,15 @@
          *
          * @var array
          */
-        protected $fillable = ['hash', 'data'];
+        protected $fillable = ['key', 'data'];
 
         protected static function boot()
         {
             parent::boot();
 
             static::creating(function ($model) {
-                if (!$model->hash) {
-                    $model->hash = sha1(config('app.name'.Date::today()->timestamp.Date::today()->microsecond));
+                if (!$model->key) {
+                    $model->key = sha1(config('app.name'.Date::today()->timestamp.Date::today()->microsecond));
                 }
             });
         }

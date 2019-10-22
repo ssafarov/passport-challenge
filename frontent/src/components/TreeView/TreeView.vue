@@ -46,8 +46,8 @@
                 </item>
             </ul>
         </b-col>
-        <b-col> <!-- Intructions -->
-            <b-jumbotron header="" lead="Instructions" class="tree-view-help">
+        <b-col md="4"> <!-- Intructions -->
+            <b-jumbotron header="" lead="Instructions & legend" class="tree-view-help">
                 <b-row>
                     <b-col>
                         <ul class="dotted">
@@ -55,12 +55,8 @@
                             <li>Single click on node to open/close.</li>
                             <li>Double click on node to edit/recreate.</li>
                             <li>Right click on node to rename, adjust an amount, range or delete.</li>
-                        </ul>
-                    </b-col>
-                    <b-col>
-                        <ul>
                             <li><b>Title</b> should be non-empty string.</li>
-                            <li><b>Amount</b> should be positive non zero integer.</li>
+                            <li><b>Amount</b> should be positive non zero integer between 1 and 16.</li>
                             <li><b>Min</b> and <b>Max</b> should be positive non zero integers.</li>
                             <li><b>Max</b> value should be greater than <b>Min</b>.</li>
                         </ul>
@@ -133,19 +129,23 @@
             bus: function (data) {
                 this.$emit('bus', data);
             },
-            editing: function (value) {
-                this.treeIsInEditState = value;
-                this.$emit('editing', value);
+            editing: function (state) {
+                this.treeIsInEditState = state;
+                this.$emit('editing', state);
             },
-            deleting: function (hash) {
+            deleting: function (model) {
+                this.treeIsInEditState = true;
+                this.$emit('editing', this.treeIsInEditState);
                 let index = null, childLength = this.treeData.children.length;
                 for (let i = 0; i < childLength; i++) {
-                    if (hash === this.treeData.children[i].hash) {
+                    if (this.treeData.children[i].hash === model.hash) {
                         index = i;
                         break;
                     }
                 }
-                this.treeData.children.splice(index, 1);
+                if (index !== null) {
+                    this.treeData.children.splice(index, 1);
+                }
                 this.treeIsInEditState = false;
                 this.$emit('editing', this.treeIsInEditState);
                 this.$emit('bus', this.treeData);
@@ -183,13 +183,13 @@
 
                 this.editing(this.treeIsInAddingState);
             },
-
             rebuildChilds: function () {
                 this.model.children = [];
-                this.model.hash = SHA1(this.model.title + Date.now());
+                this.model.hash = SHA1(this.model.title + (Math.random() * crypto.getRandomValues(new Uint8Array(1))));
                 for (let i = 0; i < this.amount; i++) {
                     this.model.children.push({
-                        'title': Math.floor(this.model.low + (Math.random() * (this.model.high - this.model.low + 1)))
+                        'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
+                        'title': Math.floor(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
                     });
                 }
             }

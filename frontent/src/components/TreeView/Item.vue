@@ -58,6 +58,7 @@
 
 <script>
     import {BButton} from 'bootstrap-vue';
+    import SHA1 from 'sha1';
 
     export default {
         name: 'tree-item',
@@ -102,15 +103,15 @@
             },
             isAmountOk: function () {
                 let iTest = Number(this.amount);
-                return Number.isInteger(iTest) && iTest < 16 && iTest > 0;
+                return Number.isInteger(iTest) && iTest > 0 && iTest <= 16;
             },
             isLowOk: function () {
-                let iTest = Number(this.model.lower);
-                return Number.isInteger(iTest) && iTest >= 0;
+                let iTest = Number(this.model.low);
+                return Number.isInteger(iTest) && iTest > 0;
             },
             isHighOk: function () {
-                let iTest = Number(this.model.higher);
-                return Number.isInteger(iTest) && iTest >= 0 && iTest > this.model.lower;
+                let iTest = Number(this.model.high);
+                return Number.isInteger(iTest) && iTest > 0 && iTest > this.model.low;
             },
             isInputOk: function () {
                 return this.isAmountOk && this.isLowOk && this.isHighOk && this.isTitleOk;
@@ -126,11 +127,11 @@
             bus: function (model) {
                 this.$emit('bus', model)
             },
-            editing: function (model) {
-                this.$emit('editing', model)
+            editing: function (state) {
+                this.$emit('editing', state)
             },
             deleting: function (model) {
-                this.$emit('deleting', model.hash);
+                this.$emit('deleting', model);
             },
             // methods
             toggleOpen: function () {
@@ -144,6 +145,7 @@
                 if (!this.isInputOk) {
                     return false;
                 }
+
                 // Rebuild Childs
                 this.rebuildChilds();
 
@@ -163,8 +165,6 @@
             },
             deleteNode: function () {
                 this.$emit('deleting', this.model);
-                this.edit = false;
-                this.$emit('editing', this.edit);
             },
             startEdit: function () {
                 if (this.state || this.model.isRoot) {
@@ -179,7 +179,8 @@
                 this.model.children = [];
                 for (let i = 0; i < this.amount; i++) {
                     this.model.children.push({
-                        'title': Math.floor(this.model.low + (Math.random() * (this.model.high - this.model.low + 1)))
+                        'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
+                        'title': Math.floor(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
                     });
                 }
             }

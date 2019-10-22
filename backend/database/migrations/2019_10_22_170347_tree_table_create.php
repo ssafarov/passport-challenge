@@ -15,7 +15,7 @@ class TreeTableCreate extends Migration
     {
         Schema::create('trees', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('hash', 160)->unique();
+            $table->string('key', 160)->unique();
             $table->longText('data');
             $table->timestamps();
         });

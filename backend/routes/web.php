@@ -28,6 +28,7 @@
 
     $router->group(['prefix' => 'api', 'middleware' => ValidTree::class], function () {
         Route::get('factories', ['uses' => 'FactoryController@index']);
+        Route::post('factories/update', ['uses' => 'FactoryController@save']);
     });
 
 

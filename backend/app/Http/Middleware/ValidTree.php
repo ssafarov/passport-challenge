@@ -18,8 +18,8 @@
 
         public function handle($request, Closure $next)
         {
-
-            $key = $request['tree_key'];
+            // Experiments with Auth methods
+            $key =  $request->hasHeader('Authorization')?$request->header('Authorization'):$request->only('tree_key');
 
             if(!$key){
                 $payload = [
