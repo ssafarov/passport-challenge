@@ -25,13 +25,8 @@
     });
 
 
-    $router->group([
-        'prefix' => 'api',
-        'namespace' => 'Api',
-        'middleware' => ['Cors']
-    ], function () {
-        Route::options('{any}');
-        //Route::get('factories', ['uses' => 'FactoryController@index']);
+    $router->group(['prefix' => 'api'], function () {
+        Route::get('factories', ['uses' => 'FactoryController@index']);
     });
 
 

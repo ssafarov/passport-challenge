@@ -68,12 +68,13 @@
 
                 axios({
                     method: method,
+                    dataType: 'json',
                     accept: 'application/json',
                     url: this.api_url + '/api/' + endpoint,
                     data: payload
                 })
                 .then(response => {
-                    this.factories = JSON.parse(response.data.payload);
+                    this.factories = JSON.parse(response.data.payload.data);
                 })
                 .catch(error => {
                     this.errors.push({status: 'error', message: 'Api call was not successfull. Please try again later. Possible reason: '+error});
