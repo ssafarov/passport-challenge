@@ -22,14 +22,16 @@
          *
          * @var array
          */
-        protected $fillable = ['hash', 'payload'];
+        protected $fillable = ['hash', 'data'];
 
         protected static function boot()
         {
             parent::boot();
 
             static::creating(function ($model) {
-                $model->hash = sha1(config('app.name'.Date::today()->timestamp.Date::today()->microsecond));
+                if (!$model->hash) {
+                    $model->hash = sha1(config('app.name'.Date::today()->timestamp.Date::today()->microsecond));
+                }
             });
         }
     }

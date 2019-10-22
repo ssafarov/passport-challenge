@@ -48,6 +48,7 @@
         },
         data: function () {
             return {
+                tree_key: 'cf23df2207d99a74fbe169e3eba035e633b65d94',
                 api_url: 'http://localhost:8080/api/',
                 factories: {children: []},
                 errors: []
@@ -70,20 +71,17 @@
                 console.log(data);
             },
             requestServer: function (endpoint) {
-               const tree_key = 'cf23df2207d99a74fbe169e3eba035e633b65d94';
-
                 const sender = axios.create({
                     baseURL: this.api_url,
-                    timeout: 10000,
+                    timeout: 5000,
                     dataType: 'json',
                     accept: 'application/json',
                 });
 
-                //sender.defaults.headers['Authorization'] = tree_key;
-                sender.get(endpoint, {params:{tree_key:tree_key}})
+                sender.get(endpoint, {params:{tree_key:this.tree_key}})
                 .then(response => {
                     console.log(response);
-                    //this.errors.push({status: response.data.status, message: response.data.message});
+                    this.errors.push({status: 'success', message: response.data.message});
                     this.factories = JSON.parse(response.data.payload.data);
                 })
                 .catch(error => {
