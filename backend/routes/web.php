@@ -11,6 +11,8 @@
     |
     */
 
+    use App\Http\Middleware\ValidTree;
+
     $router->get('/', function () use ($router) {
         $status = 200;
         $message = config('app.name').' based on '.$router->app->version();
@@ -24,8 +26,7 @@
         return response($payload)->setStatusCode($status, $message);
     });
 
-
-    $router->group(['prefix' => 'api'], function () {
+    $router->group(['prefix' => 'api', 'middleware' => ValidTree::class], function () {
         Route::get('factories', ['uses' => 'FactoryController@index']);
     });
 

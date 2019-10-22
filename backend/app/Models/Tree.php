@@ -5,8 +5,11 @@
     use Illuminate\Database\Eloquent\Model;
     use Illuminate\Support\Facades\Date;
 
-    class Factory extends Model
+    class Tree extends Model
     {
+        //
+        protected $table = 'trees';
+
         /**
          * The attributes excluded from the model's JSON form.
          *

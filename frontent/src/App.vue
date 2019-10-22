@@ -2,8 +2,14 @@
     <b-container class="application">
         <WelcomePage title="Passport Code Challenge App: Vue.js and Lumen"/>
         <b-row v-bind:key="index" v-for="(error, index) in errors" class="errors">
-            <b-alert show variant="danger" class="full-width">
-                <span>{{error.message}} ({{error.status}})</span>
+            <b-alert show v-if="error.status === 'error'" variant="danger" class="full-width">
+                <span>{{error.message}}</span>
+            </b-alert>
+            <b-alert show v-else-if="error.status === 'success'" variant="success" class="full-width">
+                <span>{{error.message}}</span>
+            </b-alert>
+            <b-alert show v-else variant="info" class="full-width">
+                <span>{{error.message}}</span>
             </b-alert>
         </b-row>
         <br/>
@@ -42,7 +48,7 @@
         },
         data: function () {
             return {
-                api_url: 'http://localhost:8080',
+                api_url: 'http://localhost:8080/api/',
                 factories: {children: []},
                 errors: []
             };
@@ -63,21 +69,27 @@
             bus: function (data) {
                 console.log(data);
             },
-            requestServer: function (endpoint, method='get') {
-                let payload = {};
+            requestServer: function (endpoint) {
+               const tree_key = 'cf23df2207d99a74fbe169e3eba035e633b65d94';
 
-                axios({
-                    method: method,
+                const sender = axios.create({
+                    baseURL: this.api_url,
+                    timeout: 10000,
                     dataType: 'json',
                     accept: 'application/json',
-                    url: this.api_url + '/api/' + endpoint,
-                    data: payload
-                })
+                });
+
+                //sender.defaults.headers['Authorization'] = tree_key;
+                sender.get(endpoint, {params:{tree_key:tree_key}})
                 .then(response => {
+                    console.log(response);
+                    //this.errors.push({status: response.data.status, message: response.data.message});
                     this.factories = JSON.parse(response.data.payload.data);
                 })
                 .catch(error => {
-                    this.errors.push({status: 'error', message: 'Api call was not successfull. Please try again later. Possible reason: '+error});
+                    console.log(error.response);
+
+                    this.errors.push({status: 'error', message: 'Api call was not successfull. Please try again later. Response: '+error});
                 });
             }
         }
