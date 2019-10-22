@@ -4,35 +4,36 @@
             <h3>Live Factories Tree
                 <b-button size="sm" variant="primary"
                           :class="{disabled: treeIsInEditState}"
-                          v-if="!isEditing"
+                          v-if="!isAdding"
                           @click="addNewChild">Add new Factory
                 </b-button>
             </h3>
             <ul class="tree">
                 <li>
-                    <div v-if="isEditing">
+                    <div v-if="isAdding">
                         <h5>Adding a new factory</h5>
-                        <input type="text" class="edit title" placeholder="Factory title" id="fTitle"
+                        <input type="text" class="edit title" placeholder="Title" id="fTitle"
                                :class="{error: !isTitleOk}"
                                v-model="model.title"/>&nbsp;@&nbsp;
                         <input type="text" class="edit number" placeholder="Amount"
                                :class="{error: !isAmountOk}"
-                               v-model="amount"/>&nbsp;with&nbsp;
+                               v-model="model.amount"/>&nbsp;with&nbsp;
                         <input type="text" class="edit number" placeholder="Min"
                                :class="{error: !isLowOk}"
                                v-model="model.low"/>&nbsp;-&nbsp;
                         <input type="text" class="edit number" placeholder="Max"
                                :class="{error: !isHighOk}"
-                               v-model="model.high"/>&nbsp;bounds
+                               v-model="model.high"/>&nbsp;range
                         <div v-if="showAlert" class="hint error">There are some errors in input. Please fix all red
                             fields before proceed.
                         </div>
+                        <br/>
                         <b-button size="sm" variant="success"
                                   :class="{disabled: !isInputOk}"
-                                  @click="submitEdit">Save
+                                  @click="addNewChildSubmit">Save
                         </b-button>&nbsp;
                         <b-button size="sm" variant="secondary"
-                                  @click="cancelEdit">Cancel
+                                  @click="addNewChildCancel">Cancel
                         </b-button>
                     </div>
                 </li>
@@ -88,29 +89,31 @@
         data: function () {
             return {
                 showAlert: false,
-                amount: null,
                 treeIsInEditState: false,
                 treeIsInAddingState: false,
-                model: {hash: '', title: '', isRoot: false, children: [], low: null, high: null},
+                model: {hash: '', title: '', isRoot: false, children: [], amount: 0, low: null, high: null},
             }
         },
-        mounted: function () {
-            this.amount = this.currentAmount;
+        created: function () {
+            this.model = this.treeData;
         },
         computed: {
-            currentAmount: function () {
-                return this.model.children && this.model.children.length ? this.model.children.length : null;
+            isRoot: function () {
+                return this.model.isRoot
+            },
+            isAdding: function () {
+                return this.treeIsInAddingState
             },
             isEditing: function () {
-                return this.treeIsInAddingState
+                return this.treeIsInEditState
             },
             isTitleOk: function () {
                 let regex = new RegExp(/(<([^>]+)>)/ig);
                 let sTest = String(this.model.title);
-                return (sTest !== '' && sTest !== null && !regex.test(sTest));
+                return (sTest !== undefined && sTest !== '' && sTest !== null && !regex.test(sTest));
             },
             isAmountOk: function () {
-                let iTest = Number(this.amount);
+                let iTest = Number(this.model.amount);
                 return Number.isInteger(iTest) && iTest > 0 && iTest <= 16;
             },
             isLowOk: function () {
@@ -126,73 +129,81 @@
             }
         },
         methods: {
-            bus: function (data) {
-                this.$emit('bus', data);
+            bus: function (model) {
+                let childLength = this.treeData.children.length;
+                for (let i = 0; i < childLength; i++) {
+                    if (this.treeData.children[i].hash === model.hash) {
+                        this.treeData.children[i] = model;
+                        break;
+                    }
+                }
+                this.$emit('bus', this.treeData)
+            },
+            adding: function (state) {
+                this.treeIsInAddingState = state;
             },
             editing: function (state) {
                 this.treeIsInEditState = state;
                 this.$emit('editing', state);
             },
             deleting: function (model) {
-                this.treeIsInEditState = true;
-                this.$emit('editing', this.treeIsInEditState);
-                let index = null, childLength = this.treeData.children.length;
+                this.editing(true);
+
+                let index = null, childLength = this.model.children.length;
                 for (let i = 0; i < childLength; i++) {
-                    if (this.treeData.children[i].hash === model.hash) {
+                    if (this.model.children[i].hash === model.hash) {
                         index = i;
                         break;
                     }
                 }
                 if (index !== null) {
-                    this.treeData.children.splice(index, 1);
+                    this.model.children.splice(index, 1);
                 }
-                this.treeIsInEditState = false;
-                this.$emit('editing', this.treeIsInEditState);
-                this.$emit('bus', this.treeData);
+
+                this.editing(false);
+
+                this.$emit('bus', this.model);
             },
             addNewChild: function () {
-                if (this.treeIsInEditState) {
+                if (this.treeIsInAddingState || this.treeIsInEditState) {
                     return false;
                 }
-                this.treeIsInAddingState = true;
-                this.editing(this.treeIsInAddingState);
+
+                this.adding(true);
+                this.editing(true);
             },
-            submitEdit: function () {
+            addNewChildSubmit: function () {
                 // Input checks
                 this.showAlert = !this.isInputOk;
                 if (!this.isInputOk) {
                     return false;
                 }
 
-                // Rebuild Childs
-                this.rebuildChilds();
-
-                this.treeData.children.push(this.model);
-
-                this.beforeEditCache = null;
-                this.treeIsInAddingState = false;
-                this.treeIsInEditState = false;
-
-                this.$emit('bus', this.model);
-                this.$emit('editing', this.treeIsInEditState);
-            },
-            cancelEdit: function () {
-                this.model = Object.assign(this.model, this.beforeEditCache);
-                this.treeIsInAddingState = false;
-                this.showAlert = false;
-
-                this.editing(this.treeIsInAddingState);
-            },
-            rebuildChilds: function () {
+                // Rebuild Childs from the root
+                this.model.isRoot = true;
                 this.model.children = [];
                 this.model.hash = SHA1(this.model.title + (Math.random() * crypto.getRandomValues(new Uint8Array(1))));
-                for (let i = 0; i < this.amount; i++) {
+                for (let i = 0; i < this.model.amount; i++) {
                     this.model.children.push({
                         'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
                         'title': Math.floor(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
                     });
                 }
-            }
+
+                this.beforeEditCache = null;
+
+                this.adding(false);
+                this.editing(false);
+
+                //Whole tree here
+                this.$emit('bus', this.model);
+            },
+            addNewChildCancel: function () {
+                this.model = Object.assign(this.model, this.beforeEditCache);
+                this.showAlert = false;
+                this.adding(false);
+                this.editing(false);
+            },
         }
     }
 </script>
