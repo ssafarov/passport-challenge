@@ -2,7 +2,7 @@
 
     namespace App\Http\Controllers;
 
-
+    use App\Events\TreeUpdated;
     use App\Models\Tree;
     use Exception;
     use Illuminate\Http\Request;
@@ -51,24 +51,26 @@
             $message = 'Requested data not found';
 
             try {
-                $factory = Tree::where('key', $data['tree_key'])->firstOrFail();
+                $tree = Tree::where('key', $data['tree_key'])->firstOrFail();
 
-                if ($factory) {
-                    $factory->data = is_array($data['payload'])?json_encode($data['payload']):$data['payload'];
-                    $factory->save();
+                if ($tree) {
+                    $tree->data = is_array($data['payload'])?json_encode($data['payload']):$data['payload'];
+                    $tree->save();
                     $message = 'Tree was updated successfully';
                     $status = 200;
                 }
 
+                event(new TreeUpdated($tree));
+
             } catch (Exception $e) {
-                $factory = null;
+                $tree = null;
                 $message = $e->getMessage();
             }
 
             $payload = [
                 'status' => $status,
                 'message' => $message,
-                'payload' => $factory
+                'payload' => $tree
             ];
 
             return response($payload)->setStatusCode($status, $message);

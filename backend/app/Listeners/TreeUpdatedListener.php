@@ -2,11 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Events\ExampleEvent;
+use App\Events\TreeUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class ExampleListener
+
+class TreeUpdatedListener
 {
     /**
      * Create the event listener.
@@ -21,10 +22,10 @@ class ExampleListener
     /**
      * Handle the event.
      *
-     * @param  ExampleEvent  $event
+     * @param  TreeUpdated  $event
      * @return void
      */
-    public function handle(ExampleEvent $event)
+    public function handle(TreeUpdated $event)
     {
         //
     }

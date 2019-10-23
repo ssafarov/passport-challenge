@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\TreeUpdated;
 use Laravel\Lumen\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -12,8 +13,8 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'App\Events\ExampleEvent' => [
-            'App\Listeners\ExampleListener',
+        'App\Events\TreeUpdated' => [
+            'App\Listeners\TreeUpdatedListener',
         ],
     ];
 }

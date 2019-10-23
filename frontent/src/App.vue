@@ -8,7 +8,7 @@
             <b-alert show v-else-if="error.status === 'success'" variant="success" class="full-width">
                 <span>{{error.message}}</span>
             </b-alert>
-            <b-alert show v-else variant="info" class="full-width">
+            <b-alert show v-else-if="error.status === 'info'" variant="info" class="full-width">
                 <span>{{error.message}}</span>
             </b-alert>
         </b-row>
@@ -49,13 +49,19 @@
         data: function () {
             return {
                 tree_key: 'cf23df2207d99a74fbe169e3eba035e633b65d94',
-                api_url: 'http://localhost:8080/api/',
+                //api_url: 'http://localhost:8080/api/',
+                api_url: 'http://api.local/api/',
                 factories: {children: []},
                 errors: []
             };
         },
         mounted: function () {
             this.makeRequest('factories');
+            this.$echo.channel('factories.'+this.api_key)
+                .listen('.factories\\updated', (event) => {
+                    let response = JSON.parse(event.update);
+                    this.factories = response;
+                })
         },
         filters: {
             formatter: function (item) {
@@ -68,14 +74,13 @@
         },
         methods: {
             bus: function (data) {
-                console.log(data);
                 this.factories = data;
                 this.makeRequest('factories/update', 'post');
             },
             makeRequest: function (endpoint, method = 'get') {
                 const sender = axios.create({
                     baseURL: this.api_url,
-                    timeout: 5000,
+                    timeout: 50000,
                     dataType: 'json',
                     accept: 'application/json, text/plain, */*',
                 });
@@ -92,11 +97,14 @@
                     },
                 };
                 this.errors = [];
-
                 sender.request(config)
                 .then(response => {
-                    this.errors.push({status: 'success', message: response.data.message});
-                    this.factories = JSON.parse(response.data.payload.data);
+                    if (response.data.payload){
+                        this.errors.push({status: 'success', message: response.data.message});
+                        this.factories = JSON.parse(response.data.payload.data);
+                    } else {
+                        this.errors.push({status: 'info', message: 'Empty payload received. Tree is not syncronized. Try to refresh page.'});
+                    }
                 })
                 .catch(error => {
                     this.errors.push({status: 'error', message: 'Api call was not successfull. Please try again later. Response: '+error});

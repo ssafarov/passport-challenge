@@ -34,4 +34,13 @@
                 }
             });
         }
+
+        /**
+         * User constructor. Also add interactive methods to model
+         *
+         * @param array $attributes
+         */
+        public function __construct( array $attributes = [] ) {
+            parent::__construct( $attributes );
+        }
     }

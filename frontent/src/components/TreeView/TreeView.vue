@@ -37,7 +37,7 @@
                         </b-button>
                     </div>
                 </li>
-                <item
+                <item   v-if="!isAdding"
                         @bus="bus"
                         @editing="editing"
                         @deleting="deleting"

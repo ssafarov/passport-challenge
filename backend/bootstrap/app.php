@@ -23,12 +23,20 @@
 
     $app->withFacades();
 
-    $app->withEloquent();
+    /*
+    |--------------------------------------------------------------------------
+    | Load configurations
+    |--------------------------------------------------------------------------
+    |
+    |
+    |*/
 
-    collect(scandir(__DIR__.'/../config'))->each(function ($item) use ($app) {
+    collect(scandir(dirname(__DIR__).'/config'))->each(function ($item) use ($app) {
         $app->configure(basename($item, '.php'));
     });
 
+
+    $app->withEloquent();
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +70,7 @@
     |
     */
 
-     $app->middleware([
+    $app->middleware([
         App\Http\Middleware\Cors::class
     ]);
 
@@ -85,9 +93,13 @@
     |
     */
 
-// $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+//    $app->register(App\Providers\AppServiceProvider::class);
+//    $app->register(App\Providers\AuthServiceProvider::class);
+    $app->register(App\Providers\EventServiceProvider::class);
+
+//    $app->register(\Illuminate\Redis\RedisServiceProvider::class);
+//    $app->register(\Illuminate\Broadcasting\BroadcastServiceProvider::class);
+//    $app->register(Pusher\Laravel\PusherServiceProvider::class);
 
     /*
     |--------------------------------------------------------------------------
