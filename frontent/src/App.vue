@@ -49,7 +49,6 @@
         data: function () {
             return {
                 tree_key: 'cf23df2207d99a74fbe169e3eba035e633b65d94',
-                //api_url: 'http://localhost:8080/api/',
                 api_url: 'http://api.local/api/',
                 factories: {children: []},
                 errors: []
@@ -57,11 +56,10 @@
         },
         mounted: function () {
             this.makeRequest('factories');
-            this.$echo.channel('factories.'+this.api_key)
-                .listen('.factories\\updated', (event) => {
-                    let response = JSON.parse(event.update);
-                    this.factories = response;
-                })
+            let channel = this.$pusher.subscribe('factories.'+this.tree_key);
+            channel.bind('factories\\updated', (event) => {
+                this.factories = JSON.parse(event.update);
+            });
         },
         filters: {
             formatter: function (item) {
