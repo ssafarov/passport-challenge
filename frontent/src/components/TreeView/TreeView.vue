@@ -186,7 +186,7 @@
                 for (let i = 0; i < this.model.amount; i++) {
                     this.model.children.push({
                         'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
-                        'title': Math.floor(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
+                        'title': Math.ceil(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
                     });
                 }
 
