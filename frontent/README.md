@@ -1,8 +1,14 @@
 # Live Tree view application 
+Author: Sergei Safarov <inbox@sergeysafarov.com>
 
 This is the frontent part of live tree view application.
 
-## Project setup
+## Getting started
+
+### Requirements
+* NPM package manager
+
+### Installation
 Open console and run the followings commands: 
 ```
 cd frontend
@@ -29,5 +35,5 @@ Lints and fixes files
 npm run lint
 ```
 
-### License
+## License
 MIT: [http://mit-license.org](http://mit-license.org)
