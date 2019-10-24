@@ -74,14 +74,6 @@
         App\Http\Middleware\Cors::class
     ]);
 
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
-
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
-
     /*
     |--------------------------------------------------------------------------
     | Register Service Providers
@@ -97,9 +89,6 @@
 //    $app->register(App\Providers\AuthServiceProvider::class);
     $app->register(App\Providers\EventServiceProvider::class);
 
-//    $app->register(\Illuminate\Redis\RedisServiceProvider::class);
-//    $app->register(\Illuminate\Broadcasting\BroadcastServiceProvider::class);
-//    $app->register(Pusher\Laravel\PusherServiceProvider::class);
 
     /*
     |--------------------------------------------------------------------------

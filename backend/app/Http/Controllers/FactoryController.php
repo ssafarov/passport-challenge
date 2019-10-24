@@ -3,6 +3,7 @@
     namespace App\Http\Controllers;
 
     use App\Events\TreeUpdated;
+    use App\Helpers\Sanitizer;
     use App\Models\Tree;
     use Exception;
     use Illuminate\Http\Request;
@@ -40,31 +41,33 @@
 
         public function save(Request $request)
         {
-            // Tree key is validated in the ValidTree middleware
-            $this->validate($request, [
-                'payload' => 'required'
-            ]);
-
             $data = $request->only('tree_key', 'payload');
 
-            $status = 404;
-            $message = 'Requested data not found';
+            $status = 400;
+            $message = 'Tree data is in wrong format';
 
-            try {
-                $tree = Tree::where('key', $data['tree_key'])->firstOrFail();
+            // Tree key and payload presence are validated in the ValidTree middleware
+            // Here need to make slightly deeper validations to check is payload has a right format
+            $incomingPayloadValid = is_array($data['payload']) && array_key_exists('hash', $data['payload']) && array_key_exists('title', $data['payload']) && array_key_exists('hash', $data['payload']) && array_key_exists('children', $data['payload']);
+            $incomingPayloadValid = $incomingPayloadValid && !empty($data['payload']['title']) && !empty($data['payload']['hash']) && !empty($data['payload']['children']);
 
-                if ($tree) {
-                    $tree->data = is_array($data['payload'])?json_encode($data['payload']):$data['payload'];
-                    $tree->save();
-                    $message = 'Tree was updated successfully';
-                    $status = 200;
+            if ($incomingPayloadValid) {
+                try {
+                    $tree = Tree::where('key', $data['tree_key'])->firstOrFail();
+
+                    if ($tree) {
+                        $tree->data = json_encode(Sanitizer::cleanArray($data['payload']));
+                        $tree->save();
+                        $message = 'Tree was updated successfully';
+                        $status = 200;
+                    }
+
+                    event(new TreeUpdated($tree));
+
+                } catch (Exception $e) {
+                    $tree = null;
+                    $message = $e->getMessage();
                 }
-
-                event(new TreeUpdated($tree));
-
-            } catch (Exception $e) {
-                $tree = null;
-                $message = $e->getMessage();
             }
 
             $payload = [

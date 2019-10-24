@@ -3,6 +3,7 @@
 
     namespace App\Http\Middleware;
 
+    use App\Models\Tree;
     use Closure;
     use Illuminate\Http\Request;
 
@@ -19,7 +20,9 @@
         public function handle($request, Closure $next)
         {
             // Experiments with Auth methods
-            $key =  $request->hasHeader('Authorization')?$request->header('Authorization'):$request->only('tree_key');
+            $key =  $request->hasHeader('Authorization')?
+                $request->header('Authorization'):$request->only('tree_key');
+            $key = is_array($key) && array_key_exists('tree_key', $key)?$key['tree_key']:$key;
 
             if(!$key){
                 $payload = [
@@ -29,7 +32,7 @@
                 return response()->json($payload, $payload['status'] );
             }
 
-            if ($key !== 'cf23df2207d99a74fbe169e3eba035e633b65d94') {
+            if (!Tree::where('key', $key)->first()) {
                 $payload = [
                     'status' => 401,
                     'message' => 'Wrong authorization'
