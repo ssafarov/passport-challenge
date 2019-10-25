@@ -14,16 +14,16 @@
                         <h5>Adding a new factory</h5>
                         <input type="text" class="edit title" placeholder="Title" id="fTitle"
                                :class="{error: !isTitleOk}"
-                               v-model="model.title"/>&nbsp;@&nbsp;
+                               v-model="newItem.title"/>&nbsp;@&nbsp;
                         <input type="text" class="edit number" placeholder="Amount"
                                :class="{error: !isAmountOk}"
-                               v-model="model.amount"/>&nbsp;with&nbsp;
+                               v-model="newItem.amount"/>&nbsp;with&nbsp;
                         <input type="text" class="edit number" placeholder="Min"
                                :class="{error: !isLowOk}"
-                               v-model="model.low"/>&nbsp;-&nbsp;
+                               v-model="newItem.low"/>&nbsp;-&nbsp;
                         <input type="text" class="edit number" placeholder="Max"
                                :class="{error: !isHighOk}"
-                               v-model="model.high"/>&nbsp;range
+                               v-model="newItem.high"/>&nbsp;range
                         <div v-if="showAlert" class="hint error">There are some errors in input. Please fix all red
                             fields before proceed.
                         </div>
@@ -91,10 +91,11 @@
                 showAlert: false,
                 treeIsInEditState: false,
                 treeIsInAddingState: false,
-                model: {hash: '', title: '', isRoot: false, children: [], amount: 0, low: null, high: null},
+                model: {hash: '', title: '', isRoot: false, children: [], amount: null, low: null, high: null},
+                newItem: {hash: '', title: '', isRoot: false, children: [], amount: null, low: null, high: null},
             }
         },
-        created: function () {
+        mounted: function () {
             this.model = this.treeData;
         },
         computed: {
@@ -109,20 +110,20 @@
             },
             isTitleOk: function () {
                 let regex = new RegExp(/(<([^>]+)>)/ig);
-                let sTest = String(this.model.title);
+                let sTest = String(this.newItem.title);
                 return (sTest !== undefined && sTest !== '' && sTest !== null && !regex.test(sTest));
             },
             isAmountOk: function () {
-                let iTest = Number(this.model.amount);
+                let iTest = Number(this.newItem.amount);
                 return Number.isInteger(iTest) && iTest > 0 && iTest <= 16;
             },
             isLowOk: function () {
-                let iTest = Number(this.model.low);
+                let iTest = Number(this.newItem.low);
                 return Number.isInteger(iTest) && iTest > 0;
             },
             isHighOk: function () {
-                let iTest = Number(this.model.high);
-                return Number.isInteger(iTest) && iTest > 0 && iTest > this.model.low;
+                let iTest = Number(this.newItem.high);
+                return Number.isInteger(iTest) && iTest > 0 && iTest > this.newItem.low;
             },
             isInputOk: function () {
                 return this.isAmountOk && this.isLowOk && this.isHighOk && this.isTitleOk;
@@ -149,20 +150,20 @@
             deleting: function (model) {
                 this.editing(true);
 
-                let index = null, childLength = this.model.children.length;
+                let index = null, childLength = this.treeData.children.length;
                 for (let i = 0; i < childLength; i++) {
-                    if (this.model.children[i].hash === model.hash) {
+                    if (this.treeData.children[i].hash === model.hash) {
                         index = i;
                         break;
                     }
                 }
                 if (index !== null) {
-                    this.model.children.splice(index, 1);
+                    this.treeData.children.splice(index, 1);
                 }
 
                 this.editing(false);
 
-                this.$emit('bus', this.model);
+                this.$emit('bus', this.treeData);
             },
             addNewChild: function () {
                 if (this.treeIsInAddingState || this.treeIsInEditState) {
@@ -180,23 +181,23 @@
                 }
 
                 // Rebuild Childs from the root
-                this.model.isRoot = true;
-                this.model.children = [];
-                this.model.hash = SHA1(this.model.title + (Math.random() * crypto.getRandomValues(new Uint8Array(1))));
-                for (let i = 0; i < this.model.amount; i++) {
-                    this.model.children.push({
-                        'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
-                        'title': Math.ceil(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
+                this.newItem.children = [];
+                this.newItem.hash = SHA1(this.newItem.title + (Math.random() * crypto.getRandomValues(new Uint8Array(1))));
+                for (let i = 0; i < this.newItem.amount; i++) {
+                    this.newItem.children.push({
+                        'hash' : SHA1(this.newItem.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
+                        'title': Math.ceil(Math.random() * (this.newItem.high - this.newItem.low + 1) + this.newItem.low)
                     });
                 }
+                this.treeData.children.push(this.newItem);
+                this.newItem = {hash: '', title: '', isRoot: false, children: [], amount: null, low: null, high: null};
 
                 this.beforeEditCache = null;
-
                 this.adding(false);
                 this.editing(false);
 
                 //Whole tree here
-                this.$emit('bus', this.model);
+                this.$emit('bus', this.treeData);
             },
             addNewChildCancel: function () {
                 this.model = Object.assign(this.model, this.beforeEditCache);

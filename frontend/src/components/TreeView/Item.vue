@@ -89,6 +89,9 @@
             isNode: function () {
                 return this.model.children && this.model.children.length;
             },
+            isChild: function () {
+                return (this.model.child && this.model.child === true)||this.model.children === undefined;
+            },
             isOpened: function () {
                 return this.open
             },
@@ -134,6 +137,10 @@
             },
             // methods
             toggleOpen: function () {
+                if (this.state) {
+                    return;
+                }
+
                 if (this.isNode) {
                     this.open = !this.open;
                 }
@@ -150,6 +157,7 @@
                 this.model.children = [];
                 for (let i = 0; i < this.model.amount; i++) {
                     this.model.children.push({
+                        'child': true,
                         'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
                         'title': Math.ceil(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
                     });
@@ -172,11 +180,11 @@
             deleteNode: function () {
                 this.$emit('deleting', this.model);
             },
+
             startEdit: function () {
-                if (this.state || this.model.isRoot) {
+                if (this.state || this.isChild || this.isRoot) {
                     return;
                 }
-
                 this.edit = true;
                 this.beforeEditCache = Object.assign({}, this.model);
                 this.$emit('editing', this.edit);

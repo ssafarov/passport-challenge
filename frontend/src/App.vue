@@ -31,7 +31,7 @@
 <script>
     import {BAlert, BCol, BContainer, BRow} from 'bootstrap-vue';
     import axios from 'axios';
-
+    import SHA1 from 'sha1';
     import Welcome from './components/Welcome.vue'
     import TreeView from './components/TreeView/TreeView';
 
@@ -50,7 +50,7 @@
             return {
                 tree_key: 'cf23df2207d99a74fbe169e3eba035e633b65d94',
                 api_url: 'http://api.local/api/',
-                factories: {children: []},
+                factories: {title:'Root', hash: SHA1(this.tree_key + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))), isRoot: true, children: []},
                 errors: []
             };
         },
