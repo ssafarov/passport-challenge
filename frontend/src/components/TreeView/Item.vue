@@ -178,6 +178,7 @@
                 this.$emit('editing', this.edit);
             },
             deleteNode: function () {
+                this.edit = false;
                 this.$emit('deleting', this.model);
             },
 
