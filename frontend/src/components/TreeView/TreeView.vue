@@ -184,9 +184,10 @@
                 this.newItem.children = [];
                 this.newItem.hash = SHA1(this.newItem.title + (Math.random() * crypto.getRandomValues(new Uint8Array(1))));
                 for (let i = 0; i < this.newItem.amount; i++) {
+                    let min = Number (this.newItem.low), max = Number(this.newItem.high);
                     this.newItem.children.push({
                         'hash' : SHA1(this.newItem.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
-                        'title': Math.ceil(Math.random() * (this.newItem.high - this.newItem.low + 1) + this.newItem.low)
+                        'title': Math.floor((Math.random() * (max - min + 1)) + min)
                     });
                 }
                 this.treeData.children.push(this.newItem);

@@ -156,10 +156,11 @@
                 this.model.hash = SHA1(this.model.title + (Math.random() * crypto.getRandomValues(new Uint8Array(1))));
                 this.model.children = [];
                 for (let i = 0; i < this.model.amount; i++) {
+                    let min = Number (this.model.low), max = Number(this.model.high);
                     this.model.children.push({
                         'child': true,
                         'hash' : SHA1(this.model.hash + (Math.random() * crypto.getRandomValues(new Uint8Array(1)))),
-                        'title': Math.ceil(Math.random() * (this.model.high - this.model.low + 1) + this.model.low)
+                        'title': Math.floor((Math.random() * (max - min + 1)) + min)
                     });
                 }
 
